@@ -65,6 +65,8 @@ internship task/
 ## 3. Research Summary: Wav2Vec 2.0
 **Paper Title:** *wav2vec 2.0: A Framework for Self-Supervised Learning of Speech Representations* (Baevski et al., NeurIPS 2020)
 
+> 📄 A standalone version of this summary is also available at [`research/wav2vec2_summary.md`](research/wav2vec2_summary.md).
+
 ### 3.1. What Problem Does It Solve?
 Historically, Automatic Speech Recognition (ASR) systems required massive amounts of labeled audio data (transcribed speech) to achieve acceptable accuracy. Transcribing speech is extremely labor-intensive, time-consuming, and expensive, creating a significant bottleneck for low-resource languages that lack extensive annotated corpus datasets.
 
