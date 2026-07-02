@@ -1,6 +1,5 @@
 import torch
 import numpy as np
-import librosa
 from transformers import Wav2Vec2ForCTC, Wav2Vec2Processor
 from transformers import logging as hf_logging
 
@@ -8,6 +7,30 @@ from transformers import logging as hf_logging
 # that is unused at inference, which triggers a noisy (but harmless) "weights
 # were not initialized / you should TRAIN this model" warning. Silence it.
 hf_logging.set_verbosity_error()
+
+
+def _resample(audio_array: np.ndarray, orig_sr: int, target_sr: int = 16000) -> np.ndarray:
+    """
+    Resample a 1D waveform to `target_sr`.
+
+    librosa is imported lazily and only when resampling is actually needed, so a
+    missing or broken librosa install (its numba/llvmlite stack is fragile) never
+    breaks the common case where audio is already 16 kHz. If librosa is
+    unavailable we fall back to scipy, which is a lighter and more reliable
+    dependency.
+    """
+    if orig_sr == target_sr:
+        return audio_array
+    try:
+        import librosa
+        return librosa.resample(audio_array, orig_sr=orig_sr, target_sr=target_sr)
+    except Exception:
+        # Fallback: high-quality polyphase resampling via scipy.
+        from math import gcd
+        from scipy.signal import resample_poly
+        g = gcd(int(orig_sr), int(target_sr))
+        up, down = int(target_sr) // g, int(orig_sr) // g
+        return resample_poly(audio_array, up, down).astype(np.float32)
 
 class SpeechModel:
     """
@@ -49,7 +72,7 @@ class SpeechModel:
 
         # Wav2Vec2 expects 16kHz sampling rate; resample anything else.
         if sampling_rate != 16000:
-            audio_array = librosa.resample(audio_array, orig_sr=sampling_rate, target_sr=16000)
+            audio_array = _resample(audio_array, orig_sr=sampling_rate, target_sr=16000)
             sampling_rate = 16000
             
         # Process inputs
