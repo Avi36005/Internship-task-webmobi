@@ -1,0 +1,14 @@
+# Python virtual environment
+.venv/
+venv/
+
+# Python caches
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# macOS
+.DS_Store
+
+# Hugging Face / model caches
+.cache/
